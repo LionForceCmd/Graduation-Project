@@ -1,0 +1,10 @@
+{"question": "Во сколько проходит ежедневный созвон команды?", "expected_needs_review": false, "expected_document": "Правила работы команды", "why": "В правилах указано время стендапа: 10:30 по Москве."}
+{"question": "Сколько времени даётся на ревью задачи?", "expected_needs_review": false, "expected_document": "Правила работы команды", "why": "Ревью выполняется в течение 1 рабочего дня."}
+{"question": "Через сколько дней возвращаются деньги клиенту при отказе от услуги?", "expected_needs_review": false, "expected_document": "Частые вопросы клиентов", "why": "Возврат производится в течение 7 рабочих дней."}
+{"question": "Как клиенту сменить тариф поддержки?", "expected_needs_review": false, "expected_document": "Частые вопросы клиентов", "why": "Через личный кабинет, раздел «Подписка»."}
+{"question": "Что означает термин MVP?", "expected_needs_review": false, "expected_document": "Словарь терминов", "why": "В словаре есть определение MVP."}
+{"question": "Что ответить клиенту, который просит перенести срок сдачи?", "expected_needs_review": false, "expected_document": "Шаблоны ответов", "why": "Есть готовый шаблон ответа."}
+{"question": "Какие бывают статусы задачи?", "expected_needs_review": false, "expected_document": "Процесс запуска задачи", "why": "Перечислены пять статусов."}
+{"question": "Какая зарплата у директора студии?", "expected_needs_review": true, "expected_document": null, "why": "В базе нет информации о зарплатах, поэтому нужна честная отметка «данных недостаточно»."}
+{"question": "Какой пароль от Wi-Fi в офисе?", "expected_needs_review": true, "expected_document": null, "why": "Такой информации в документах нет (и хранить её в базе знаний не стоит)."}
+{"question": "Как оформить командировку в Токио?", "expected_needs_review": true, "expected_document": null, "why": "Про командировки в документах ничего нет; слово «команда» не должно давать ложного совпадения."}

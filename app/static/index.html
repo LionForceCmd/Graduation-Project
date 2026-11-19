@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>База знаний команды</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --ink:#1d2330; --muted:#6b7385; --line:#e3e6ec; --accent:#2f5bea;
+          --warn:#b45309; --warnbg:#fef3c7; --ok:#166534; --okbg:#dcfce7; --err:#b91c1c; --errbg:#fee2e2; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#12151c; --card:#1b1f29; --ink:#e8ebf2; --muted:#9aa3b5; --line:#2c3240; --accent:#7d9bff;
+            --warn:#fbbf24; --warnbg:#3a2c0a; --ok:#86efac; --okbg:#10321c; --err:#fca5a5; --errbg:#3b1414; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--bg); color:var(--ink); }
+  header { display:flex; align-items:center; gap:16px; flex-wrap:wrap; padding:14px 24px; background:var(--card); border-bottom:1px solid var(--line); }
+  header h1 { font-size:18px; margin:0; }
+  #mode { margin-left:auto; font-size:13px; color:var(--muted); }
+  nav { display:flex; gap:4px; padding:0 24px; background:var(--card); border-bottom:1px solid var(--line); overflow-x:auto; }
+  nav button { background:none; border:0; border-bottom:3px solid transparent; padding:12px 14px; font:inherit; color:var(--muted); cursor:pointer; white-space:nowrap; }
+  nav button.active { color:var(--accent); border-color:var(--accent); font-weight:600; }
+  main { max-width:1100px; margin:0 auto; padding:20px 16px 60px; }
+  section { display:none; } section.active { display:block; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:16px; }
+  h2 { font-size:16px; margin:0 0 12px; }
+  label { display:block; font-size:13px; color:var(--muted); margin:8px 0 4px; }
+  input[type=text], textarea, select { width:100%; padding:9px 10px; font:inherit; color:inherit; background:var(--bg); border:1px solid var(--line); border-radius:8px; }
+  textarea { min-height:130px; resize:vertical; }
+  button.btn { padding:9px 16px; font:inherit; border-radius:8px; border:1px solid var(--accent); background:var(--accent); color:#fff; cursor:pointer; }
+  button.btn.ghost { background:none; color:var(--accent); }
+  button.btn:disabled { opacity:.5; cursor:wait; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .row > input[type=text] { flex:1; min-width:220px; width:auto; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+  tr.click { cursor:pointer; } tr.click:hover { background:var(--bg); }
+  .mono { font-family:ui-monospace,Consolas,monospace; font-size:12px; color:var(--muted); }
+  .badge { display:inline-block; padding:2px 9px; border-radius:99px; font-size:12px; font-weight:600; }
+  .b-review { background:var(--warnbg); color:var(--warn); }
+  .b-ok { background:var(--okbg); color:var(--ok); }
+  .b-err { background:var(--errbg); color:var(--err); }
+  .b-muted { background:var(--bg); color:var(--muted); border:1px solid var(--line); }
+  .answer { font-size:16px; white-space:pre-wrap; }
+  .source { border-left:3px solid var(--accent); padding:6px 12px; margin:8px 0; background:var(--bg); border-radius:0 8px 8px 0; }
+  .source a { font-size:13px; }
+  .review-box { border:1px solid var(--warn); background:var(--warnbg); color:var(--warn); border-radius:8px; padding:10px 14px; margin:10px 0; }
+  .review-box b { color:inherit; }
+  .muted { color:var(--muted); font-size:13px; }
+  a { color:var(--accent); cursor:pointer; }
+  pre { background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:10px; overflow:auto; white-space:pre-wrap; word-break:break-word; font-size:12px; max-height:280px; }
+  mark { background:#fde68a; color:#1d2330; padding:0 2px; border-radius:3px; }
+  dialog { width:min(760px, 94vw); max-height:88vh; border:1px solid var(--line); border-radius:12px; background:var(--card); color:var(--ink); padding:20px; }
+  dialog::backdrop { background:rgba(0,0,0,.45); }
+  .doctext { white-space:pre-wrap; max-height:55vh; overflow:auto; background:var(--bg); padding:12px; border-radius:8px; border:1px solid var(--line); }
+  .toolbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
+  .toolbar .spacer { flex:1; }
+  .empty { text-align:center; color:var(--muted); padding:24px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>База знаний команды</h1>
+  <span id="mode" class="muted"></span>
+</header>
+<nav id="tabs">
+  <button data-tab="docs" class="active">Документы</button>
+  <button data-tab="ask">Вопросы</button>
+  <button data-tab="history">История</button>
+  <button data-tab="audit">Аудит</button>
+</nav>
+
+<main>
+<!-- 1. Документы -->
+<section id="docs" class="active">
+  <div class="card">
+    <h2>Добавить документ</h2>
+    <label for="d-title">Название</label>
+    <input type="text" id="d-title" maxlength="200" placeholder="Например: Правила работы команды">
+    <label for="d-text">Текст (абзацы разделяйте пустой строкой — по ним идёт поиск)</label>
+    <textarea id="d-text" placeholder="Вставьте текст или загрузите файл .txt / .md"></textarea>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="d-add">Добавить</button>
+      <label class="btn ghost" style="margin:0;display:inline-block;cursor:pointer">Загрузить файл
+        <input type="file" id="d-file" accept=".txt,.md,text/plain,text/markdown" hidden></label>
+      <span id="d-msg" class="muted"></span>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Документы</h2>
+    <div id="d-list"></div>
+  </div>
+</section>
+
+<!-- 2. Вопросы -->
+<section id="ask">
+  <div class="card">
+    <h2>Задать вопрос по базе знаний</h2>
+    <div class="row">
+      <input type="text" id="q-input" maxlength="500" placeholder="Например: во сколько проходит ежедневный созвон?">
+      <button class="btn" id="q-go">Спросить</button>
+    </div>
+    <p class="muted" id="q-hint">Ответ строится только по найденным фрагментам. Если подходящих источников нет — система честно скажет, что данных недостаточно.</p>
+  </div>
+  <div id="q-result"></div>
+</section>
+
+<!-- 3. История -->
+<section id="history">
+  <div class="card">
+    <div class="toolbar">
+      <h2 style="margin:0">История вопросов</h2>
+      <label style="margin:0"><input type="checkbox" id="h-review"> только «требует проверки»</label>
+      <span class="spacer"></span>
+      <a id="h-json" href="/export/qa?format=json" download>Скачать JSON</a>
+      <a id="h-csv" href="/export/qa?format=csv" download>Скачать CSV</a>
+    </div>
+    <div id="h-list"></div>
+  </div>
+</section>
+
+<!-- 4. Аудит -->
+<section id="audit">
+  <div class="card">
+    <div class="toolbar">
+      <h2 style="margin:0">Журнал запусков (audit_runs)</h2>
+      <label style="margin:0"><input type="checkbox" id="a-err"> только ошибки</label>
+      <span class="spacer"></span>
+      <a href="/export/audit?format=json" download>Скачать JSON</a>
+      <a href="/export/audit?format=csv" download>Скачать CSV</a>
+    </div>
+    <div id="a-list"></div>
+  </div>
+</section>
+</main>
+
+<dialog id="dlg"><div id="dlg-body"></div>
+  <div style="text-align:right;margin-top:14px"><button class="btn ghost" id="dlg-close">Закрыть</button></div>
+</dialog>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = (iso) => iso ? iso.replace("T", " ").replace("+00:00", " UTC") : "";
+const REASONS = {
+  NO_SOURCES: ["В базе знаний не найдено подходящих фрагментов.", "Переформулируйте вопрос (добавьте ключевые слова из документа) или добавьте документ с нужной информацией."],
+  LOW_CONFIDENCE: ["Модель/поиск не уверены в ответе.", "Проверьте ответ по источникам вручную или уточните вопрос."],
+  INVALID_JSON: ["Модель вернула ответ не в формате JSON.", "Показан безопасный резервный ответ из найденных цитат. Проверьте его вручную."],
+  SCHEMA_MISMATCH: ["JSON модели не соответствует схеме.", "Показан безопасный резервный ответ из найденных цитат. Проверьте его вручную."],
+  QUOTE_NOT_IN_CONTEXT: ["Модель привела цитату, которой нет в документах — она отброшена.", "Сверьте ответ с оставшимися источниками."],
+};
+async function api(path, opts) {
+  const r = await fetch(path, opts);
+  let data = null; try { data = await r.json(); } catch (e) {}
+  if (!r.ok) throw new Error(Array.isArray(data?.detail) ? data.detail.join("; ") : (data?.detail || r.statusText));
+  return data;
+}
+const post = (path, body) => api(path, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)});
+const reviewBadge = (nr) => nr ? '<span class="badge b-review">требует проверки</span>' : '<span class="badge b-ok">ок</span>';
+
+/* ---------- вкладки ---------- */
+function showTab(name) {
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("active", b.dataset.tab === name));
+  document.querySelectorAll("main section").forEach(s => s.classList.toggle("active", s.id === name));
+  if (name === "docs") loadDocs(); if (name === "history") loadHistory(); if (name === "audit") loadAudit();
+}
+$("#tabs").addEventListener("click", e => { if (e.target.dataset.tab) showTab(e.target.dataset.tab); });
+
+/* ---------- окно с деталями ---------- */
+function openDialog(html) { $("#dlg-body").innerHTML = html; $("#dlg").showModal(); }
+$("#dlg-close").onclick = () => $("#dlg").close();
+
+/* ---------- документы ---------- */
+let docTitles = {};
+async function loadDocs() {
+  const docs = await api("/kb/documents");
+  docTitles = Object.fromEntries(docs.map(d => [d.id, d.title]));
+  $("#d-list").innerHTML = docs.length ? `<table><thead><tr><th>Название</th><th>Создан</th><th>Фрагментов</th><th>document_id</th></tr></thead><tbody>` +
+    docs.map(d => `<tr class="click" data-id="${esc(d.id)}"><td>${esc(d.title)}</td><td>${fmt(d.created_at)}</td><td>${d.snippets}</td><td class="mono">${esc(d.id)}</td></tr>`).join("") + "</tbody></table>"
+    : '<div class="empty">Документов пока нет. Добавьте первый выше.</div>';
+}
+$("#d-list").addEventListener("click", e => { const tr = e.target.closest("tr[data-id]"); if (tr) openDoc(tr.dataset.id); });
+async function openDoc(id, quote) {
+  try {
+    const d = await api("/kb/documents/" + encodeURIComponent(id));
+    let body = esc(d.text);
+    if (quote) {
+      const re = new RegExp(quote.trim().split(/\s+/).map(w => esc(w).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("\\s+"), "i");
+      body = body.replace(re, m => `<mark>${m}</mark>`);
+    }
+    openDialog(`<h2>${esc(d.title)}</h2><div class="muted">${fmt(d.created_at)} · <span class="mono">${esc(d.id)}</span></div><div class="doctext" style="margin-top:10px">${body}</div>`);
+    if (quote) setTimeout(() => $("#dlg mark")?.scrollIntoView({block:"center"}), 50);
+  } catch (e) { alert(e.message); }
+}
+$("#d-add").onclick = async () => {
+  const msg = $("#d-msg"); msg.textContent = "";
+  try {
+    const r = await post("/kb/documents", {title: $("#d-title").value, text: $("#d-text").value});
+    msg.textContent = "Добавлено: " + r.document_id; $("#d-title").value = ""; $("#d-text").value = "";
+    loadDocs();
+  } catch (e) { msg.innerHTML = `<span class="badge b-err">ошибка</span> ${esc(e.message)}`; }
+};
+$("#d-file").onchange = async (e) => {
+  const f = e.target.files[0]; if (!f) return;
+  $("#d-text").value = await f.text();
+  if (!$("#d-title").value) $("#d-title").value = f.name.replace(/\.[^.]+$/, "");
+  e.target.value = "";
+};
+
+/* ---------- вопросы ---------- */
+function renderAnswer(r) {
+  const why = r.reason ? r.reason.split(",").map(s => s.trim().split(" ")[0]).filter(c => REASONS[c]) : [];
+  let html = `<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Ответ</h2><span>${reviewBadge(r.needs_review)} ${r.confidence ? `<span class="badge b-muted">уверенность: ${esc(r.confidence)}</span>` : ""}</span></div>
+    <p class="answer">${esc(r.answer)}</p>`;
+  if (r.needs_review) {
+    const first = REASONS[why[0]] || ["Ответ требует проверки человеком.", "Проверьте ответ по источникам."];
+    html += `<div class="review-box"><b>Требует проверки.</b> Причина: ${esc(first[0])} <span class="mono">${esc(r.reason || "")}</span><br><b>Что сделать:</b> ${esc(first[1])}</div>`;
+  }
+  if (r.sources.length) {
+    html += `<h2 style="margin-top:14px">Источники</h2>` + r.sources.map(s =>
+      `<div class="source">«${esc(s.quote)}»<br><a data-doc="${esc(s.document_id)}" data-quote="${esc(s.quote)}">${esc(docTitles[s.document_id] || s.document_id)} — открыть в документе</a></div>`).join("");
+  }
+  return html + `<div class="muted">запись истории: <a data-run="${esc(r.run_id)}">${esc(r.run_id)}</a></div></div>`;
+}
+async function ask() {
+  const q = $("#q-input").value.trim(); if (!q) return;
+  const btn = $("#q-go"); btn.disabled = true; btn.textContent = "Ищу ответ…";
+  $("#q-result").innerHTML = "";
+  try {
+    if (!Object.keys(docTitles).length) await loadDocs();
+    $("#q-result").innerHTML = renderAnswer(await post("/kb/ask", {question: q}));
+  } catch (e) { $("#q-result").innerHTML = `<div class="card"><span class="badge b-err">ошибка</span> ${esc(e.message)}</div>`; }
+  btn.disabled = false; btn.textContent = "Спросить";
+}
+$("#q-go").onclick = ask;
+$("#q-input").addEventListener("keydown", e => { if (e.key === "Enter") ask(); });
+document.addEventListener("click", e => {
+  const a = e.target.closest("a[data-doc]"); if (a) { $("#dlg").open && $("#dlg").close(); openDoc(a.dataset.doc, a.dataset.quote); }
+  const r = e.target.closest("a[data-run]"); if (r) openRun(r.dataset.run);
+});
+
+/* ---------- история ---------- */
+let runs = [];
+async function loadHistory() {
+  if (!Object.keys(docTitles).length) await loadDocs();
+  runs = await api("/qa?limit=100" + ($("#h-review").checked ? "&needs_review=true" : ""));
+  $("#h-list").innerHTML = runs.length ? `<table><thead><tr><th>Время</th><th>Вопрос</th><th>Статус</th><th>Причина</th></tr></thead><tbody>` +
+    runs.map(r => `<tr class="click" data-run="${esc(r.id)}"><td>${fmt(r.created_at)}</td><td>${esc(r.question)}</td><td>${reviewBadge(r.needs_review)}</td><td class="mono">${esc(r.error || "")}</td></tr>`).join("") + "</tbody></table>"
+    : '<div class="empty">Вопросов пока нет.</div>';
+  $("#h-json").href = "/export/qa?format=json" + ($("#h-review").checked ? "&needs_review=true" : "");
+  $("#h-csv").href = "/export/qa?format=csv" + ($("#h-review").checked ? "&needs_review=true" : "");
+}
+$("#h-review").onchange = loadHistory;
+$("#h-list").addEventListener("click", e => { const tr = e.target.closest("tr[data-run]"); if (tr) openRun(tr.dataset.run); });
+async function openRun(id) {
+  try {
+    const r = await api("/qa/" + encodeURIComponent(id));
+    if (!Object.keys(docTitles).length) await loadDocs();
+    const raw = {question: r.question, answer: r.answer, sources: r.sources, confidence: r.confidence, needs_review: r.needs_review, error: r.error, provider: r.provider, duration_ms: r.duration_ms};
+    openDialog(`<h2>Карточка вопроса</h2><div class="muted">${fmt(r.created_at)} · <span class="mono">${esc(r.id)}</span> · ${esc(r.provider || "")} · ${r.duration_ms ?? "?"} мс</div>
+      <p><b>Вопрос:</b> ${esc(r.question)}</p><p>${reviewBadge(r.needs_review)} ${r.error ? `<span class="mono">${esc(r.error)}</span>` : ""}</p>
+      <div class="answer">${esc(r.answer)}</div>
+      ${r.sources.map(s => `<div class="source">«${esc(s.quote)}»<br><a data-doc="${esc(s.document_id)}" data-quote="${esc(s.quote)}">${esc(s.title || docTitles[s.document_id] || s.document_id)}</a></div>`).join("")}
+      <h2 style="margin-top:14px">Сырой вывод</h2><pre>${esc(JSON.stringify(raw, null, 2))}</pre>
+      ${r.raw_output ? `<h2>Ответ модели как есть</h2><pre>${esc(r.raw_output)}</pre>` : ""}`);
+  } catch (e) { alert(e.message); }
+}
+
+/* ---------- аудит ---------- */
+let audits = [];
+async function loadAudit() {
+  audits = await api("/audit?limit=200" + ($("#a-err").checked ? "&status=error" : ""));
+  $("#a-list").innerHTML = audits.length ? `<table><thead><tr><th>Время</th><th>Действие</th><th>Статус</th><th>Причина / ошибка</th><th>мс</th></tr></thead><tbody>` +
+    audits.map((a, i) => `<tr class="click" data-i="${i}"><td>${fmt(a.created_at)}</td><td>${esc(a.action)}</td><td><span class="badge ${a.status === "ok" ? "b-ok" : "b-err"}">${esc(a.status)}</span></td><td class="mono">${esc(a.error || "")}</td><td>${a.duration_ms ?? ""}</td></tr>`).join("") + "</tbody></table>"
+    : '<div class="empty">Запусков пока нет.</div>';
+}
+$("#a-err").onchange = loadAudit;
+$("#a-list").addEventListener("click", e => {
+  const tr = e.target.closest("tr[data-i]"); if (!tr) return;
+  const a = audits[+tr.dataset.i];
+  const pretty = (s) => { try { return JSON.stringify(JSON.parse(s), null, 2); } catch (_) { return s || ""; } };
+  openDialog(`<h2>${esc(a.action)}</h2><div class="muted">${fmt(a.created_at)} · <span class="mono">${esc(a.id)}</span> · ${a.duration_ms ?? "?"} мс · статус: ${esc(a.status)}</div>
+    ${a.error ? `<p><b>Причина / ошибка:</b> <span class="mono">${esc(a.error)}</span></p>` : ""}
+    <h2>Вход</h2><pre>${esc(pretty(a.input))}</pre><h2>Выход</h2><pre>${esc(pretty(a.output))}</pre>`);
+});
+
+/* ---------- старт ---------- */
+(async () => {
+  try {
+    const h = await api("/health");
+    $("#mode").innerHTML = h.provider === "ollama"
+      ? `Режим: Ollama · ${esc(h.model)} · <span class="badge ${h.ollama === "ok" ? "b-ok" : "b-err"}">${esc(h.ollama)}</span>`
+      : `Режим: mock (без языковой модели)`;
+  } catch (e) {}
+  loadDocs();
+})();
+</script>
+</body>
+</html>

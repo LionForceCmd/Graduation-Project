@@ -1,0 +1,19 @@
+# Режим без Ollama (по умолчанию):   docker compose up --build
+# Режим с Ollama на этом компьютере: LLM_PROVIDER=ollama docker compose up --build
+#   (Windows PowerShell:  $env:LLM_PROVIDER="ollama"; docker compose up --build)
+services:
+  kb:
+    build: .
+    ports:
+      - "4000:4000"
+    environment:
+      LLM_PROVIDER: ${LLM_PROVIDER:-mock}
+      OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen3.5:latest}
+      LLM_TEMPERATURE: ${LLM_TEMPERATURE:-0.1}
+      LLM_TIMEOUT: ${LLM_TIMEOUT:-180}
+    volumes:
+      - ./data:/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
